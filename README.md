@@ -1,7 +1,8 @@
 # 🚀 Smart AI Resume Analyzer
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
-![Streamlit](https://img.shields.io/badge/Framework-Streamlit-red)
+![React](https://img.shields.io/badge/Frontend-React-61DAFB)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
 ![AI](https://img.shields.io/badge/AI-NLP-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Project-Active-success)
@@ -13,7 +14,7 @@ The system leverages **Natural Language Processing (NLP)**, **Generative AI**, a
 ---
 
 # 🌐 Live Demo
-https://smart-ai-resume-analyzer-manigoud.streamlit.app/
+https://ai-resume-analyzer-v43d.onrender.com/
 
 ---
 
@@ -89,10 +90,10 @@ Integrated user feedback collection and an admin dashboard to monitor applicatio
 # 🏗 System Architecture
 
 ```text
-User Upload Resume
+User Upload Resume (React Frontend)
         │
         ▼
-Resume Parsing Engine (PDF/DOCX)
+Resume Parsing Engine (FastAPI Backend)
         │
         ▼
 Skill Extraction Module (SpaCy/NLTK)
@@ -112,17 +113,18 @@ Analytics Dashboard & Resume Builder
 # 🛠 Tech Stack
 
 ### Frontend
-* Streamlit
-* Streamlit-Lottie (Animations)
+* React
+* Vite
+* Lucide React
+* Recharts
 
 ### Backend
-* Python 3.10+
+* FastAPI (Python 3.10+)
 * SQLite (Database)
 
 ### Data Processing & Visualization
 * Pandas
 * NumPy
-* Plotly
 
 ### AI & NLP
 * Google Generative AI (Gemini)
@@ -142,19 +144,19 @@ Analytics Dashboard & Resume Builder
 ```text
 Smart_AI_Resume_Analyzer
 │
-├── app.py                  # Main application entry point
+├── frontend/               # React frontend source code
+│   ├── src/                # React components and assets
+│   └── package.json        # Frontend dependencies
+│
+├── backend/                # FastAPI backend source code
+│   ├── api/                # API route definitions
+│   └── main.py             # FastAPI entry point
+│
 ├── config/                 # Configuration files and database setup
-├── dashboard/              # Analytics dashboard module
-├── feedback/               # User feedback management
-├── jobs/                   # Job search and recommendation module
-├── resume_analytics/       # Resume scoring and analysis logic
-├── style/                  # CSS styling and assets
 ├── utils/                  # Helper modules (AI analyzer, builder, etc.)
 ├── poppler/                # PDF processing binaries (for Windows)
 ├── Dockerfile              # Docker containerization configuration
-├── requirements.txt        # Python dependencies
-├── startup.bat             # Windows startup script
-├── startup.sh              # Linux/Mac startup script
+├── requirements.txt        # Python backend dependencies
 └── README.md
 ```
 
@@ -163,7 +165,8 @@ Smart_AI_Resume_Analyzer
 # ⚙️ Installation
 
 ## Prerequisites
-- Python 3.10+
+- Node.js & npm (for the frontend)
+- Python 3.10+ (for the backend)
 - Poppler (for PDF rendering/processing, included for Windows users)
 - Tesseract OCR (optional, for advanced PDF parsing)
 
@@ -174,39 +177,34 @@ git clone https://github.com/FenixDevOps/Smart_AI_Resume_Analyzer.git
 cd Smart_AI_Resume_Analyzer
 ```
 
-## Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Set up Environment Variables
-Create a `.env` file in the root directory and add your API keys (e.g., Google Generative AI API key):
+Create a `.env` file in the backend directory and add your API keys (e.g., Google Generative AI API key):
 ```env
 GOOGLE_API_KEY=your_google_api_key_here
 ```
 
-## Run the application
+## Run the Application (Local Development)
 
-### Windows
-```cmd
-startup.bat
+### 1. Start the Backend (FastAPI)
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --reload --port 8000
 ```
 
-### Linux/macOS
+### 2. Start the Frontend (React)
+Open a new terminal window:
 ```bash
-bash startup.sh
+cd frontend
+npm install
+npm run dev
 ```
-Or directly using Streamlit:
-```bash
-streamlit run app.py
-```
+The frontend will typically run on `http://localhost:5173`.
 
 ## Docker Installation
 You can also run the application using Docker:
 ```bash
 docker build -t smart-resume-analyzer .
-docker run -p 8501:8501 smart-resume-analyzer
+docker run -p 8000:8000 smart-resume-analyzer
 ```
 
 ---
