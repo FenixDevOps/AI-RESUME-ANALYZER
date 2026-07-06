@@ -26,3 +26,9 @@ docx2pdf
 docx2txt
 python-pptx
 pypdf2
+pandas
+plotly
+pillow
+pycryptodome==3.20.0
+matplotlib
+seaborn
