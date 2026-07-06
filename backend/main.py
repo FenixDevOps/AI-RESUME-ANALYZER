@@ -32,7 +32,7 @@ if os.path.exists(frontend_dist_path):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist_path, "assets")), name="assets")
 
     # Serve the main index.html for any other route (React Router support)
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     def serve_frontend(full_path: str):
         # Allow requests to /api to fall through (though they should be caught by router above)
         if full_path.startswith("api/"):
