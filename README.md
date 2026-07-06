@@ -6,14 +6,15 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Project-Active-success)
 
-An **AI-powered Resume Analysis Platform** that evaluates resumes, predicts ATS compatibility scores, detects missing skills, and provides actionable recommendations to improve job readiness.
+An **AI-powered Resume Analysis Platform** that evaluates resumes, predicts ATS compatibility scores, detects missing skills, provides actionable recommendations to improve job readiness, and offers built-in job search capabilities.
 
-The system leverages **Natural Language Processing (NLP)** and **machine learning techniques** to help candidates optimize resumes for modern recruitment systems.
+The system leverages **Natural Language Processing (NLP)**, **Generative AI**, and **machine learning techniques** to help candidates optimize resumes for modern recruitment systems.
 
 ---
 
 # 🌐 Live Demo
 https://smart-ai-resume-analyzer-manigoud.streamlit.app/
+
 ---
 
 # 📸 Project Preview
@@ -41,54 +42,45 @@ Example:
 # 📌 Key Features
 
 ### 📄 Resume Parsing
-
-Upload resumes and automatically extract:
-
+Upload resumes (PDF/DOCX) and automatically extract:
 * Skills
 * Education
 * Work experience
 * Projects
 
----
-
 ### 📊 ATS Score Prediction
-
 The system calculates an **ATS compatibility score** based on:
-
 * Resume structure
 * Keyword optimization
 * Section completeness
 * Skill relevance
 
----
-
-### 🧠 Skill Gap Detection
-
-Identify missing skills required for modern job roles and receive improvement suggestions.
-
----
+### 🧠 Skill Gap Detection & AI Analysis
+Identify missing skills required for modern job roles and receive AI-driven improvement suggestions using Google Generative AI (Gemini).
 
 ### 📈 Resume Analytics Dashboard
-
 Interactive visualization including:
-
 * Skill distribution
 * Resume strength indicators
 * Resume improvement insights
 
----
-
 ### 🧰 Resume Builder
+Generate structured, professional resumes easily directly from the platform and export them to PDF or DOCX.
 
-Generate structured professional resumes easily.
+### 🎯 Job Search
+Built-in job search capabilities that recommend relevant jobs based on your role and skills.
+
+### 💬 Feedback System & Admin Dashboard
+Integrated user feedback collection and an admin dashboard to monitor application usage and insights.
 
 ---
 
 # 🧠 AI Concepts Used
 
+* Generative AI (LLM integration)
 * Natural Language Processing (NLP)
-* Resume skill extraction
-* Text preprocessing
+* Named Entity Recognition (NER)
+* Resume skill extraction & text preprocessing
 * Resume scoring algorithms
 * Data visualization
 
@@ -96,23 +88,23 @@ Generate structured professional resumes easily.
 
 # 🏗 System Architecture
 
-```
+```text
 User Upload Resume
         │
         ▼
-Resume Parsing Engine
+Resume Parsing Engine (PDF/DOCX)
         │
         ▼
-Skill Extraction Module
+Skill Extraction Module (SpaCy/NLTK)
         │
         ▼
-ATS Scoring Algorithm
+AI Analysis & ATS Scoring (Generative AI)
         │
         ▼
-Recommendation Engine
+Recommendation & Job Search Engine
         │
         ▼
-Analytics Dashboard
+Analytics Dashboard & Resume Builder
 ```
 
 ---
@@ -120,53 +112,49 @@ Analytics Dashboard
 # 🛠 Tech Stack
 
 ### Frontend
-
 * Streamlit
+* Streamlit-Lottie (Animations)
 
 ### Backend
+* Python 3.10+
+* SQLite (Database)
 
-* Python
-
-### Data Processing
-
+### Data Processing & Visualization
 * Pandas
 * NumPy
-
-### AI / NLP
-
-* Natural Language Processing
-* Text analysis
-
-### Visualization
-
 * Plotly
-* Matplotlib
 
-### Database
+### AI & NLP
+* Google Generative AI (Gemini)
+* SpaCy
+* NLTK
+* Scikit-learn
 
-* SQLite
+### Document Processing
+* PyPDF2 / pdfminer.six / pdfplumber
+* python-docx
+* pytesseract / pdf2image
 
 ---
 
 # 📂 Project Structure
 
-```
+```text
 Smart_AI_Resume_Analyzer
 │
-├── app.py
-├── config
-│   └── database.py
-│
-├── dashboard
-│   └── dashboard.py
-│
-├── utils
-│   └── helper modules
-│
-├── requirements.txt
-├── docs
-│   ├── dashboard.png
-│   └── demo.gif
+├── app.py                  # Main application entry point
+├── config/                 # Configuration files and database setup
+├── dashboard/              # Analytics dashboard module
+├── feedback/               # User feedback management
+├── jobs/                   # Job search and recommendation module
+├── resume_analytics/       # Resume scoring and analysis logic
+├── style/                  # CSS styling and assets
+├── utils/                  # Helper modules (AI analyzer, builder, etc.)
+├── poppler/                # PDF processing binaries (for Windows)
+├── Dockerfile              # Docker containerization configuration
+├── requirements.txt        # Python dependencies
+├── startup.bat             # Windows startup script
+├── startup.sh              # Linux/Mac startup script
 └── README.md
 ```
 
@@ -174,49 +162,73 @@ Smart_AI_Resume_Analyzer
 
 # ⚙️ Installation
 
+## Prerequisites
+- Python 3.10+
+- Poppler (for PDF rendering/processing, included for Windows users)
+- Tesseract OCR (optional, for advanced PDF parsing)
+
 ## Clone the repository
 
-```
+```bash
 git clone https://github.com/FenixDevOps/Smart_AI_Resume_Analyzer.git
-```
-
-## Navigate to project folder
-
-```
 cd Smart_AI_Resume_Analyzer
 ```
 
 ## Install dependencies
 
-```
+```bash
 pip install -r requirements.txt
+```
+
+## Set up Environment Variables
+Create a `.env` file in the root directory and add your API keys (e.g., Google Generative AI API key):
+```env
+GOOGLE_API_KEY=your_google_api_key_here
 ```
 
 ## Run the application
 
+### Windows
+```cmd
+startup.bat
 ```
+
+### Linux/macOS
+```bash
+bash startup.sh
+```
+Or directly using Streamlit:
+```bash
 streamlit run app.py
+```
+
+## Docker Installation
+You can also run the application using Docker:
+```bash
+docker build -t smart-resume-analyzer .
+docker run -p 8501:8501 smart-resume-analyzer
 ```
 
 ---
 
 # 📊 Application Workflow
 
-1️⃣ Upload resume
-2️⃣ AI extracts resume information
-3️⃣ Resume is analyzed for structure and keywords
-4️⃣ ATS score is calculated
-5️⃣ Missing skills and improvements are suggested
+1️⃣ **Upload resume**: User uploads their resume in PDF or DOCX format.
+2️⃣ **AI extracts resume information**: The system parses out contact info, skills, education, etc.
+3️⃣ **Resume is analyzed for structure and keywords**: Checks against job roles and industry standards.
+4️⃣ **ATS score is calculated**: An overall compatibility score is generated.
+5️⃣ **Missing skills and improvements are suggested**: Get actionable feedback and AI-driven recommendations.
+6️⃣ **Job Search (Optional)**: Explore current job listings that match your skills.
 
 ---
 
 # 🔮 Future Improvements
 
-* Resume vs Job Description Matching
-* Candidate Ranking System
+* Resume vs Specific Job Description Matching
+* Enhanced Candidate Ranking System
 * AI Interview Preparation Assistant
-* Job Recommendation Engine
-* Resume Optimization using Generative AI
+* Advanced Resume Optimization using Generative AI
+* Multi-language support
 
 ---
 
@@ -224,8 +236,7 @@ streamlit run app.py
 
 **Bathini Manikanta**
 
-GitHub
-https://github.com/FenixDevOps
+GitHub: [FenixDevOps](https://github.com/FenixDevOps)
 
 ---
 
