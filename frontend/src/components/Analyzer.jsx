@@ -34,7 +34,7 @@ const Analyzer = () => {
     if (jobDescription) formData.append('job_description', jobDescription);
 
     try {
-      const response = await fetch('http://localhost:8000/api/analyzer/analyze', {
+      const response = await fetch('/api/analyzer/analyze', {
         method: 'POST',
         body: formData,
       });

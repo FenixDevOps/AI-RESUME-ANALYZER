@@ -4,7 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 
-const API = 'http://localhost:8000/api/dashboard';
+const API = '/api/dashboard';
 
 // ── Palette ───────────────────────────────────────────────────────────
 const COLORS = ['#4FD1C5', '#63b3ed', '#b794f4', '#68d391', '#f6ad55'];
