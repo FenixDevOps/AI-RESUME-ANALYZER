@@ -1,5 +1,4 @@
 import os
-import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as genai
 import pdfplumber
@@ -57,9 +56,9 @@ class AIResumeAnalyzer:
                         except Exception as e:
                             # Don't show these specific errors to the user
                             if "PDFColorSpace" not in str(e) and "Cannot convert" not in str(e):
-                                st.warning(f"Error extracting text from page with pdfplumber: {e}")
+                                print(f"Error extracting text from page with pdfplumber: {e}")
             except Exception as e:
-                st.warning(f"pdfplumber extraction failed: {e}")
+                print(f"pdfplumber extraction failed: {e}")
             
             # If pdfplumber extraction worked, return the text
             if text.strip():
@@ -67,7 +66,7 @@ class AIResumeAnalyzer:
                 return text.strip()
             
             # Try PyPDF2 as a fallback
-            st.info("Trying PyPDF2 extraction method...")
+            print("Trying PyPDF2 extraction method...")
             try:
                 import pypdf
                 pdf_text = ""
@@ -82,10 +81,10 @@ class AIResumeAnalyzer:
                     os.unlink(temp_path)  # Clean up the temp file
                     return pdf_text.strip()
             except Exception as e:
-                st.warning(f"PyPDF2 extraction failed: {e}")
+                print(f"PyPDF2 extraction failed: {e}")
             
             # If we got here, both extraction methods failed
-            st.warning("Standard text extraction methods failed. Your PDF might be image-based or scanned.")
+            print("Standard text extraction methods failed. Your PDF might be image-based or scanned.")
             
             # Try OCR as a last resort
             try:
@@ -93,7 +92,7 @@ class AIResumeAnalyzer:
                 import pytesseract
                 from pdf2image import convert_from_path
                 
-                st.info("Attempting OCR for image-based PDF. This may take a moment...")
+                print("Attempting OCR for image-based PDF. This may take a moment...")
                 
                 # Check if poppler is installed
                 poppler_path = None
@@ -108,11 +107,11 @@ class AIResumeAnalyzer:
                     for path in possible_paths:
                         if os.path.exists(path):
                             poppler_path = path
-                            st.success(f"Found Poppler at: {path}")
+                            print(f"Found Poppler at: {path}")
                             break
                     
                     if not poppler_path:
-                        st.warning("Poppler not found in common locations. Using default path: C:\\poppler\\Library\\bin")
+                        print("Poppler not found in common locations. Using default path: C:\\poppler\\Library\\bin")
                         poppler_path = r'C:\poppler\Library\bin'
                 
                 # Try to convert PDF to images
@@ -125,7 +124,7 @@ class AIResumeAnalyzer:
                     # Process each image with OCR
                     ocr_text = ""
                     for i, image in enumerate(images):
-                        st.info(f"Processing page {i+1} with OCR...")
+                        print(f"Processing page {i+1} with OCR...")
                         page_text = pytesseract.image_to_string(image)
                         ocr_text += page_text + "\n"
                     
@@ -133,23 +132,23 @@ class AIResumeAnalyzer:
                         os.unlink(temp_path)  # Clean up the temp file
                         return ocr_text.strip()
                     else:
-                        st.error("OCR extraction yielded no text. Please check if the PDF contains actual text content.")
+                        print("OCR extraction yielded no text. Please check if the PDF contains actual text content.")
                 except Exception as e:
-                    st.error(f"PDF to image conversion failed: {e}")
-                    st.info("If you're on Windows, make sure Poppler is installed and in your PATH.")
-                    st.info("Download Poppler from: https://github.com/oschwartz10612/poppler-windows/releases/")
+                    print(f"PDF to image conversion failed: {e}")
+                    print("If you're on Windows, make sure Poppler is installed and in your PATH.")
+                    print("Download Poppler from: https://github.com/oschwartz10612/poppler-windows/releases/")
             except ImportError as e:
-                st.error(f"OCR libraries not available: {e}")
-                st.info("Please install the required OCR libraries:")
-                st.code("pip install pytesseract pdf2image")
-                st.info("For Windows, also download and install:")
-                st.info("1. Tesseract OCR: https://github.com/UB-Mannheim/tesseract/wiki")
-                st.info("2. Poppler: https://github.com/oschwartz10612/poppler-windows/releases/")
+                print(f"OCR libraries not available: {e}")
+                print("Please install the required OCR libraries:")
+                print("pip install pytesseract pdf2image")
+                print("For Windows, also download and install:")
+                print("1. Tesseract OCR: https://github.com/UB-Mannheim/tesseract/wiki")
+                print("2. Poppler: https://github.com/oschwartz10612/poppler-windows/releases/")
             except Exception as e:
-                st.error(f"OCR processing failed: {e}")
+                print(f"OCR processing failed: {e}")
         
         except Exception as e:
-            st.error(f"PDF processing failed: {e}")
+            print(f"PDF processing failed: {e}")
         
         # Clean up the temp file
         try:
@@ -158,7 +157,7 @@ class AIResumeAnalyzer:
             pass
         
         # If all extraction methods failed, return an empty string
-        st.error("All text extraction methods failed. Please try a different PDF or manually extract the text.")
+        print("All text extraction methods failed. Please try a different PDF or manually extract the text.")
         return ""
     
     def extract_text_from_docx(self, docx_file):
@@ -176,7 +175,7 @@ class AIResumeAnalyzer:
             for para in doc.paragraphs:
                 text += para.text + "\n"
         except Exception as e:
-            st.error(f"Error extracting text from DOCX: {e}")
+            print(f"Error extracting text from DOCX: {e}")
         
         os.unlink(temp_path)  # Clean up the temp file
         return text
@@ -193,41 +192,24 @@ class AIResumeAnalyzer:
             model = genai.GenerativeModel("gemini-2.5-flash")
             
             base_prompt = f"""
-            You are an expert resume analyst with deep knowledge of industry standards, job requirements, and hiring practices across various fields. Your task is to provide a comprehensive, detailed analysis of the resume provided.
+            You are a helpful resume reviewer. Your task is to provide feedback on the provided resume using VERY simple words and basic language. Do not use complex jargon or detailed explanations. Be direct and brief.
             
-            Please structure your response in the following format:
+            Please structure your response using these exact headings:
             
-            ## Overall Assessment
-            [Provide a detailed assessment of the resume's overall quality, effectiveness, and alignment with industry standards. Include specific observations about formatting, content organization, and general impression. Be thorough and specific.]
-            
-            ## Professional Profile Analysis
-            [Analyze the candidate's professional profile, experience trajectory, and career narrative. Discuss how well their story comes across and whether their career progression makes sense for their apparent goals.]
-            
-            ## Skills Analysis
-            - **Current Skills**: [List ALL skills the candidate demonstrates in their resume, categorized by type (technical, soft, domain-specific, etc.). Be comprehensive.]
-            - **Skill Proficiency**: [Assess the apparent level of expertise in key skills based on how they're presented in the resume]
-            - **Missing Skills**: [List important skills that would improve the resume for their target role. Be specific and explain why each skill matters.]
-            
-            ## Experience Analysis
-            [Provide detailed feedback on how well the candidate has presented their experience. Analyze the use of action verbs, quantifiable achievements, and relevance to their target role. Suggest specific improvements.]
-            
-            ## Education Analysis
-            [Analyze the education section, including relevance of degrees, certifications, and any missing educational elements that would strengthen their profile.]
+            ## Overall Impression
+            [Provide a very short, 1-2 sentence summary of the resume using simple words.]
             
             ## Key Strengths
-            [List 5-7 specific strengths of the resume with detailed explanations of why these are effective]
+            [List 2-3 main strengths of the resume in very short, simple bullet points.]
             
             ## Areas for Improvement
-            [List 5-7 specific areas where the resume could be improved with detailed, actionable recommendations]
+            [List 2-3 main areas to improve in very short, simple bullet points.]
             
-            ## ATS Optimization Assessment
-            [Analyze how well the resume is optimized for Applicant Tracking Systems. Provide a specific ATS score from 0-100, with 100 being perfectly optimized. Use this format: "ATS Score: XX/100". Then suggest specific keywords and formatting changes to improve ATS performance.]
-            
-            ## Recommended Courses/Certifications
-            [Suggest 5-7 specific courses or certifications that would enhance the candidate's profile, with a brief explanation of why each would be valuable]
+            ## ATS Score
+            [Provide an ATS optimization score exactly in this format: "ATS Score: XX/100". Explain briefly why in 1 simple sentence.]
             
             ## Resume Score
-            [Provide a score from 0-100 based on the overall quality of the resume. Use this format exactly: "Resume Score: XX/100" where XX is the numerical score. Be consistent with your assessment - a resume with significant issues should score below 60, an average resume 60-75, a good resume 75-85, and an excellent resume 85-100.]
+            [Provide an overall score exactly in this format: "Resume Score: XX/100".]
             
             Resume:
             {resume_text}
@@ -239,7 +221,7 @@ class AIResumeAnalyzer:
                 The candidate is targeting a role as: {job_role}
                 
                 ## Role Alignment Analysis
-                [Analyze how well the resume aligns with the target role of {job_role}. Provide specific recommendations to better align the resume with this role.]
+                [Explain how well the resume fits the {job_role} role in 1-2 simple sentences.]
                 """
             
             if job_description:
@@ -251,11 +233,21 @@ class AIResumeAnalyzer:
                 {job_description}
                 
                 ## Job Match Analysis
-                [Provide a detailed analysis of how well the resume matches the job description, with a match percentage and specific areas of alignment and misalignment]
-                
-                ## Key Job Requirements Not Met
-                [List specific requirements from the job description that are not addressed in the resume, with recommendations on how to address each gap]
+                [Provide a very short summary of how well the resume matches the job description in simple words. What are 1-2 missing things?]
                 """
+            
+            # Ask Gemini to append a structured JSON block for dashboard display
+            base_prompt += """
+            
+            Finally, after all your sections above, append EXACTLY this JSON block (replace the placeholder values with real ones based on your analysis). Do not add any extra text after the JSON:
+            
+            ```json
+            {
+              "strengths": ["strength 1 in plain words", "strength 2 in plain words", "strength 3 in plain words"],
+              "weaknesses": ["weakness 1 in plain words", "weakness 2 in plain words", "weakness 3 in plain words"]
+            }
+            ```
+            """
             
             response = model.generate_content(base_prompt)
             analysis = response.text.strip()
@@ -266,14 +258,53 @@ class AIResumeAnalyzer:
             # Extract ATS score if present
             ats_score = self._extract_ats_score_from_text(analysis)
             
+            # Extract strengths and weaknesses from the JSON block
+            strengths, weaknesses = self._extract_strengths_weaknesses(analysis)
+            
+            # Strip the JSON block from the displayed analysis text
+            clean_analysis = re.sub(r'```json\s*\{[\s\S]*?\}\s*```', '', analysis).strip()
+            
             return {
-                "analysis": analysis,
+                "analysis": clean_analysis,
                 "resume_score": resume_score,
-                "ats_score": ats_score
+                "ats_score": ats_score,
+                "strengths": strengths,
+                "weaknesses": weaknesses
             }
         
         except Exception as e:
             return {"error": f"Analysis failed: {str(e)}"}
+    
+    def _extract_strengths_weaknesses(self, analysis_text):
+        """Extract structured strengths and weaknesses from Gemini's JSON block."""
+        try:
+            # Look for a JSON block in the response
+            json_match = re.search(r'```json\s*(\{[\s\S]*?\})\s*```', analysis_text)
+            if json_match:
+                data = json.loads(json_match.group(1))
+                strengths = data.get("strengths", [])
+                weaknesses = data.get("weaknesses", [])
+                # Sanitize: ensure they are lists of strings
+                strengths = [str(s) for s in strengths if s][:5]
+                weaknesses = [str(w) for w in weaknesses if w][:5]
+                return strengths, weaknesses
+        except Exception:
+            pass
+        # Fallback: extract from Key Strengths and Areas for Improvement sections
+        strengths = []
+        weaknesses = []
+        try:
+            s_match = re.search(r'## Key Strengths\s*\n(.*?)(?=##|```|$)', analysis_text, re.DOTALL)
+            if s_match:
+                lines = [l.strip().lstrip('-•* ') for l in s_match.group(1).splitlines() if l.strip()]
+                strengths = [l for l in lines if l][:3]
+            w_match = re.search(r'## Areas for Improvement\s*\n(.*?)(?=##|```|$)', analysis_text, re.DOTALL)
+            if w_match:
+                lines = [l.strip().lstrip('-•* ') for l in w_match.group(1).splitlines() if l.strip()]
+                weaknesses = [l for l in lines if l][:3]
+        except Exception:
+            pass
+        return strengths, weaknesses
 
     
     def generate_pdf_report(self, analysis_result, candidate_name, job_role):
@@ -295,8 +326,8 @@ class AIResumeAnalyzer:
                 import datetime
                 import math
             except ImportError as e:
-                st.error(f"Error importing PDF libraries: {str(e)}")
-                st.info("Please make sure reportlab is installed: pip install reportlab")
+                print(f"Error importing PDF libraries: {str(e)}")
+                print("Please make sure reportlab is installed: pip install reportlab")
                 return self.simple_generate_pdf_report(analysis_result, candidate_name, job_role)
             
             # Helper function to clean markdown formatting
@@ -320,11 +351,11 @@ class AIResumeAnalyzer:
             
             # Validate input data
             if not analysis_result:
-                st.error("No analysis result provided for PDF generation")
+                print("No analysis result provided for PDF generation")
                 return None
                 
             # Print debug info
-            st.info(f"Generating PDF report for {candidate_name} targeting {job_role}")
+            print(f"Generating PDF report for {candidate_name} targeting {job_role}")
             
             # Create a buffer for the PDF
             buffer = io.BytesIO()
@@ -1094,9 +1125,9 @@ class AIResumeAnalyzer:
             return buffer
         
         except Exception as e:
-            st.error(f"Error generating simple PDF report: {str(e)}")
+            print(f"Error generating simple PDF report: {str(e)}")
             import traceback
-            st.code(traceback.format_exc())
+            print(traceback.format_exc())
             return None
             
     def extract_skills_from_analysis(self, analysis_text):
@@ -1115,7 +1146,7 @@ class AIResumeAnalyzer:
                         if skill:
                             skills.append(skill)
         except Exception as e:
-            st.warning(f"Error extracting skills: {str(e)}")
+            print(f"Error extracting skills: {str(e)}")
         
         return skills
         
@@ -1135,7 +1166,7 @@ class AIResumeAnalyzer:
                         if skill:
                             missing_skills.append(skill)
         except Exception as e:
-            st.warning(f"Error extracting missing skills: {str(e)}")
+            print(f"Error extracting missing skills: {str(e)}")
         
         return missing_skills
     
@@ -1173,15 +1204,25 @@ class AIResumeAnalyzer:
     def _extract_ats_score_from_text(self, analysis_text):
         """Extract the ATS score from the analysis text"""
         try:
-            # Look for the ATS Score in the ATS Optimization Assessment section
-            if "## ATS Optimization Assessment" in analysis_text:
-                ats_section = analysis_text.split("## ATS Optimization Assessment")[1].split("##")[0].strip()
-                # Extract the score using regex
-                score_match = re.search(r'ATS Score:\s*(\d{1,3})/100', ats_section)
-                if score_match:
-                    score = int(score_match.group(1))
-                    # Ensure score is within valid range
-                    return max(0, min(score, 100))
+            # Try the section heading used by the fast-path prompt: "## ATS Score"
+            for heading in ("## ATS Score", "## ATS Optimization Assessment", "## ATS Optimization"):
+                if heading in analysis_text:
+                    ats_section = analysis_text.split(heading)[1].split("##")[0].strip()
+                    score_match = re.search(r'ATS Score:\s*(\d{1,3})/100', ats_section)
+                    if score_match:
+                        return max(0, min(int(score_match.group(1)), 100))
+                    # Fallback: grab the first bare number in that section
+                    score_match = re.search(r'\b(\d{1,3})\b', ats_section)
+                    if score_match:
+                        score = int(score_match.group(1))
+                        if 0 <= score <= 100:
+                            return score
+
+            # Full-text fallback — handles any section structure
+            score_match = re.search(r'ATS Score:\s*(\d{1,3})/100', analysis_text)
+            if score_match:
+                return max(0, min(int(score_match.group(1)), 100))
+
             return 0
         except Exception as e:
             print(f"Error extracting ATS score: {str(e)}")
@@ -1303,8 +1344,8 @@ class AIResumeAnalyzer:
                 import datetime
                 import math
             except ImportError as e:
-                st.error(f"Error importing PDF libraries: {str(e)}")
-                st.info("Please make sure reportlab is installed: pip install reportlab")
+                print(f"Error importing PDF libraries: {str(e)}")
+                print("Please make sure reportlab is installed: pip install reportlab")
                 return None
             
             # Helper function to clean markdown formatting
@@ -1328,7 +1369,7 @@ class AIResumeAnalyzer:
             
             # Validate input data
             if not analysis_result:
-                st.error("No analysis result provided for PDF generation")
+                print("No analysis result provided for PDF generation")
                 return None
                 
             # Create a buffer for the PDF
@@ -1805,9 +1846,9 @@ class AIResumeAnalyzer:
             return buffer
         
         except Exception as e:
-            st.error(f"Error generating simple PDF report: {str(e)}")
+            print(f"Error generating simple PDF report: {str(e)}")
             import traceback
-            st.code(traceback.format_exc())
+            print(traceback.format_exc())
             return None 
 
     def process_sections(self, analysis_text, content, normal_style, list_item_style, subheading_style, heading_style, clean_markdown):

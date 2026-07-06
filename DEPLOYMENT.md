@@ -1,233 +1,74 @@
-# Deployment Guide for Smart AI Resume Analyzer
+# Deployment Guide: Smart AI Resume Analyzer
 
-This guide provides instructions for deploying the Smart AI Resume Analyzer application in various environments, with a focus on resolving Chrome webdriver issues.
+The Smart AI Resume Analyzer features a modern **React (Vite) + FastAPI** architecture. 
+Because the application relies on system-level libraries for OCR and PDF processing (`tesseract-ocr`, `poppler-utils`), **Docker is the recommended deployment method.**
 
-## Local Deployment
+---
 
-### Prerequisites
-- Python 3.7 or higher
-- Chrome browser installed
-- pip for installing dependencies
+## 🚀 Recommended Approach: Unified Docker Container
 
-### Steps for Windows
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Run the application using the Python script:
-   ```
-   python run_app.py
-   ```
-   
-   This script will automatically set up chromedriver and start the application.
+We have configured the backend to serve the frontend statically. This allows you to build the entire application into a **single Docker container** that can be deployed anywhere (Render, Railway, Heroku, AWS, DigitalOcean, etc.).
 
-   Alternatively, you can run the batch file:
-   ```
-   startup.bat
-   ```
-
-### Steps for Linux/Mac
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Run the setup script to install the correct chromedriver:
-   ```
-   python setup_chromedriver.py
-   ```
-4. Run the application:
-   ```
-   streamlit run app.py
-   ```
-
-   Alternatively, you can use the startup script which handles both chromedriver setup and application startup:
-   ```
-   chmod +x startup.sh
-   ./startup.sh
-   ```
-
-## Server Deployment (Linux)
-
-### Installing Chrome on Ubuntu/Debian
+### Step 1: Build the Docker Image
+From the root of the project, run:
 ```bash
-# Update package list
-sudo apt update
-
-# Install Chrome dependencies
-sudo apt install -y wget unzip fontconfig fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcairo2 libcups2 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 xdg-utils
-
-# Download and install Chrome
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install -y ./google-chrome-stable_current_amd64.deb
-rm google-chrome-stable_current_amd64.deb
-
-# Verify installation
-google-chrome --version
+docker build -t smart-resume-ai .
 ```
+*Note: This utilizes a multi-stage Dockerfile. It will first use Node.js to compile the React frontend, and then use Python to install system dependencies, backend requirements, and bundle everything together.*
 
-### Installing Chrome on CentOS/RHEL
+### Step 2: Run the Docker Container
 ```bash
-# Add Chrome repository
-sudo tee /etc/yum.repos.d/google-chrome.repo <<EOF
-[google-chrome]
-name=google-chrome
-baseurl=http://dl.google.com/linux/chrome/rpm/stable/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=https://dl.google.com/linux/linux_signing_key.pub
-EOF
+docker run -p 8000:8000 smart-resume-ai
+```
+The application will now be available at `http://localhost:8000`.
 
-# Install Chrome
-sudo yum install -y google-chrome-stable
+### Deploying to Render / Railway
+1. Connect your GitHub repository to your Render or Railway account.
+2. Create a new **Web Service**.
+3. Select **Docker** as the environment/build type.
+4. The platform will automatically read the `Dockerfile`, build the multi-stage image, and expose it on the required port.
 
-# Verify installation
-google-chrome --version
+---
+
+## 🛠 Alternative Approach: Separate Frontend & Backend
+
+If you prefer to deploy the frontend to a CDN (like Vercel or Netlify) and host the backend separately, follow these steps.
+
+### 1. Deploy the Backend (FastAPI)
+Deploy the backend to a provider that supports Docker (due to `tesseract` and `poppler`). 
+* **Environment Variables:** Set `CORS_ORIGINS` (if configured) to allow requests from your frontend URL.
+* **Build:** Use the existing `Dockerfile`, but you can optionally remove the Node.js frontend build stages to save build time.
+
+### 2. Deploy the Frontend (Vercel / Netlify)
+Deploy the `frontend/` directory to Vercel or Netlify.
+* **Build Command:** `npm run build`
+* **Output Directory:** `dist`
+* **Environment Variables:** You must configure the frontend to point to your live backend API URL. 
+  * Update the API base URL in your React components (e.g., replace `http://localhost:8000` with `https://your-backend-url.onrender.com`).
+
+---
+
+## 💻 Local Development
+
+To run the application locally for development purposes, you should run both servers simultaneously.
+
+### 1. Start the Backend
+Open a terminal in the root directory:
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start FastAPI server
+python -m uvicorn backend.main:app --reload --port 8000
 ```
 
-### Running the Application on Server
-After installing Chrome, deploy the application:
+### 2. Start the Frontend
+Open a second terminal in the `frontend/` directory:
+```bash
+# Install dependencies
+npm install
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Make the startup script executable and run it:
-   ```
-   chmod +x startup.sh
-   ./startup.sh
-   ```
-
-## Windows Server Deployment
-
-### Prerequisites
-- Python 3.7 or higher
-- Chrome browser installed
-- pip for installing dependencies
-
-### Steps
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Run the application using the Python script:
-   ```
-   python run_app.py
-   ```
-   
-   This script will automatically set up chromedriver and start the application.
-
-## Streamlit Cloud Deployment
-
-When deploying to Streamlit Cloud, you need to ensure Chrome is available. Our application includes multiple fallback mechanisms to handle this.
-
-### Steps for Streamlit Cloud
-1. Push your code to a GitHub repository
-2. Create a new app in Streamlit Cloud pointing to your repository
-3. Make sure your `requirements.txt` includes all necessary dependencies:
-   - `selenium>=4.10.0`
-   - `webdriver-manager>=4.0.0`
-   - `chromedriver-autoinstaller>=0.6.2`
-4. Ensure the `packages.txt` file is in your repository with:
-   ```
-   chromium
-   chromium-driver
-   libglib2.0-0
-   libnss3
-   libgconf-2-4
-   libfontconfig1
-   xvfb
-   wget
-   unzip
-   ```
-
-### Troubleshooting Streamlit Cloud
-If you encounter issues with Chrome on Streamlit Cloud:
-
-1. Check the logs for specific error messages
-2. Try adding a custom command to run the setup script before the app starts:
-   - In the Streamlit Cloud settings, add a "Main file path" of `run_app.py` instead of `app.py`
-
-## Docker Deployment
-
-For Docker deployment, you need to include Chrome in your Docker image.
-
-### Sample Dockerfile
-```dockerfile
-FROM python:3.9-slim
-
-# Install Chrome
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    unzip \
-    xvfb \
-    libglib2.0-0 \
-    libnss3 \
-    libgconf-2-4 \
-    libfontconfig1 \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set up working directory
-WORKDIR /app
-
-# Copy requirements and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Make scripts executable
-RUN chmod +x startup.sh setup_chromedriver.py
-
-# Expose port for Streamlit
-EXPOSE 8501
-
-# Run the startup script
-CMD ["python", "run_app.py"]
+# Start Vite dev server
+npm run dev
 ```
-
-## Troubleshooting Common Issues
-
-### Error: "Service unexpectedly exited"
-This usually indicates that Chrome cannot be started. Ensure:
-- Chrome is installed
-- You have the correct permissions
-- You're using the `--no-sandbox` option in headless environments
-
-### Error: "Chrome version must be between X and Y"
-This indicates a version mismatch between Chrome and chromedriver:
-- Run the `setup_chromedriver.py` script to install the matching chromedriver version
-- The script automatically detects your Chrome version and downloads the compatible chromedriver
-
-### Error: "Permission denied" when installing chromedriver
-This is a permission issue:
-- Try running the application with administrator privileges
-- Ensure the user has write permissions to the installation directory
-- Use the `setup_chromedriver.py` script which installs chromedriver in the user's home directory
-
-### Error: "unknown error: DevToolsActivePort file doesn't exist"
-This is common in containerized environments:
-- Add `--disable-dev-shm-usage` to Chrome options (already included in our setup)
-- Ensure you're using `--no-sandbox` in Docker/container environments
-
-### Windows-specific issues
-If you encounter issues on Windows:
-- Make sure Chrome is installed in the standard location
-- Try running the application as administrator
-- Use the `run_app.py` script which handles setup automatically
-- Check Windows Defender or antivirus software that might be blocking chromedriver
-
-## Additional Resources
-- [Selenium Documentation](https://www.selenium.dev/documentation/)
-- [Chrome for Testing](https://developer.chrome.com/docs/chromium/chrome-for-testing)
-- [Streamlit Deployment](https://docs.streamlit.io/streamlit-cloud/get-started/deploy-an-app) 
+Access the application at `http://localhost:5173`.

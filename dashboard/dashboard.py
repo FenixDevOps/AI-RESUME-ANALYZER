@@ -31,82 +31,269 @@ class DashboardManager:
         """Apply custom styling for dashboard"""
         st.markdown("""
             <style>
-                .dashboard-title {
-                    font-size: 2.5rem;
-                    font-weight: bold;
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+                /* ── Base ── */
+                html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+                /* ── Keyframes ── */
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(24px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes shimmer {
+                    0%   { background-position: -400px 0; }
+                    100% { background-position: 400px 0; }
+                }
+                @keyframes pulseGlow {
+                    0%, 100% { box-shadow: 0 0 12px rgba(79,209,197,0.3); }
+                    50%       { box-shadow: 0 0 28px rgba(79,209,197,0.65); }
+                }
+                @keyframes countUp {
+                    from { opacity: 0; transform: scale(0.8); }
+                    to   { opacity: 1; transform: scale(1); }
+                }
+
+                /* ── Dashboard hero ── */
+                .dash-hero {
+                    background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 40%, #0f3460 100%);
+                    border-radius: 20px;
+                    padding: 2.4rem 2.8rem;
                     margin-bottom: 2rem;
-                    color: white;
-                    text-align: center;
+                    position: relative;
+                    overflow: hidden;
+                    border: 1px solid rgba(79,209,197,0.18);
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+                    animation: fadeInUp 0.6s ease-out;
                 }
-                
-                .metric-card {
-                    background-color: #2D2D2D;
-                    border-radius: 15px;
-                    padding: 1.5rem;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                    transition: transform 0.3s ease;
-                    height: 100%;
+                .dash-hero::before {
+                    content: '';
+                    position: absolute;
+                    top: -50%; left: -50%;
+                    width: 200%; height: 200%;
+                    background: radial-gradient(ellipse at 70% 30%, rgba(79,209,197,0.08) 0%, transparent 65%);
+                    pointer-events: none;
                 }
-                
-                .metric-card:hover {
-                    transform: translateY(-5px);
+                .dash-hero-grid {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 1rem;
                 }
-                
-                .metric-value {
-                    font-size: 2.5rem;
-                    font-weight: bold;
-                    color: #4CAF50;
-                    margin: 0.5rem 0;
+                .dash-hero-left h1 {
+                    font-size: 2.4rem;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #4FD1C5 0%, #63b3ed 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    margin: 0 0 0.4rem 0;
+                    letter-spacing: -0.5px;
                 }
-                
-                .metric-label {
+                .dash-hero-left p {
+                    color: rgba(255,255,255,0.55);
                     font-size: 1rem;
-                    color: #B0B0B0;
+                    margin: 0;
                 }
-                
-                .trend-up {
-                    color: #4CAF50;
-                    font-size: 1.2rem;
+                .dash-timestamp {
+                    background: rgba(79,209,197,0.12);
+                    border: 1px solid rgba(79,209,197,0.3);
+                    border-radius: 40px;
+                    padding: 0.45rem 1.1rem;
+                    font-size: 0.82rem;
+                    color: #4FD1C5;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    white-space: nowrap;
                 }
-                
-                .trend-down {
-                    color: #F44336;
-                    font-size: 1.2rem;
+
+                /* ── Stats grid ── */
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 1.2rem;
+                    margin-top: 1.8rem;
                 }
-                
-                .chart-container {
-                    background-color: #2D2D2D;
-                    border-radius: 15px;
-                    padding: 1.5rem;
-                    margin: 1rem 0;
+                @media (max-width: 900px) {
+                    .stats-grid { grid-template-columns: repeat(2, 1fr); }
                 }
-                
+
+                /* ── Stat card ── */
+                .stat-card {
+                    background: rgba(255,255,255,0.04);
+                    backdrop-filter: blur(14px);
+                    border-radius: 18px;
+                    padding: 1.6rem 1.4rem;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    transition: transform 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+                    position: relative;
+                    overflow: hidden;
+                    animation: fadeInUp 0.5s ease-out both;
+                }
+                .stat-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: 3px;
+                    border-radius: 18px 18px 0 0;
+                }
+                .stat-card:hover {
+                    transform: translateY(-6px);
+                    background: rgba(255,255,255,0.08);
+                    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+                }
+                .stat-card.teal::before   { background: linear-gradient(90deg,#4FD1C5,#38b2ac); }
+                .stat-card.blue::before   { background: linear-gradient(90deg,#63b3ed,#4299e1); }
+                .stat-card.purple::before { background: linear-gradient(90deg,#b794f4,#9f7aea); }
+                .stat-card.green::before  { background: linear-gradient(90deg,#68d391,#48bb78); }
+
+                .stat-icon {
+                    font-size: 1.6rem;
+                    margin-bottom: 0.7rem;
+                    display: block;
+                }
+                .stat-value {
+                    font-size: 2.6rem;
+                    font-weight: 800;
+                    margin: 0;
+                    line-height: 1;
+                    animation: countUp 0.5s ease-out;
+                }
+                .stat-card.teal   .stat-value { color: #4FD1C5; }
+                .stat-card.blue   .stat-value { color: #63b3ed; }
+                .stat-card.purple .stat-value { color: #b794f4; }
+                .stat-card.green  .stat-value { color: #68d391; }
+
+                .stat-label {
+                    font-size: 0.85rem;
+                    color: rgba(255,255,255,0.55);
+                    margin: 0.45rem 0 0.8rem;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.6px;
+                }
+                .trend-indicator {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.28rem;
+                    padding: 0.25rem 0.65rem;
+                    border-radius: 20px;
+                    font-size: 0.78rem;
+                    font-weight: 600;
+                }
+                .trend-up   { background: rgba(72,187,120,0.15); color: #68d391; }
+                .trend-down { background: rgba(245,101,101,0.15); color: #fc8181; }
+                .trend-neutral { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+
+                /* ── Section title ── */
                 .section-title {
-                    font-size: 1.5rem;
-                    color: white;
-                    margin: 2rem 0 1rem 0;
-                }
-                
-                .stPlotlyChart {
-                    background-color: #2D2D2D;
-                    border-radius: 15px;
-                    padding: 1rem;
-                }
-                
-                div[data-testid="stHorizontalBlock"] > div {
-                    background-color: #2D2D2D;
-                    border-radius: 15px;
-                    padding: 1rem;
-                    margin: 0.5rem;
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    color: #4FD1C5;
+                    margin: 2rem 0 1rem;
+                    padding-bottom: 0.6rem;
+                    border-bottom: 2px solid rgba(79,209,197,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    letter-spacing: -0.2px;
                 }
 
-                [data-testid="stMetricValue"] {
-                    font-size: 2rem !important;
+                /* ── Chart container ── */
+                .chart-container {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 18px;
+                    padding: 1.2rem;
+                    margin-bottom: 1.2rem;
+                    transition: box-shadow 0.3s ease;
+                }
+                .chart-container:hover {
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
                 }
 
-                [data-testid="stMetricLabel"] {
-                    font-size: 1rem !important;
+                /* ── Insight cards ── */
+                .insights-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 1.2rem;
+                    margin-top: 1rem;
                 }
+                @media (max-width: 900px) {
+                    .insights-grid { grid-template-columns: 1fr; }
+                }
+                .insight-card {
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    position: relative;
+                    transition: transform 0.25s ease, box-shadow 0.25s ease;
+                    animation: fadeInUp 0.5s ease-out both;
+                }
+                .insight-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+                }
+                .insight-card.trophy { border-left: 4px solid #f6e05e; }
+                .insight-card.trend  { border-left: 4px solid #68d391; }
+                .insight-card.skills { border-left: 4px solid #4FD1C5; }
+                .insight-card h3 {
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: #fff;
+                    margin: 0 0 0.6rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                }
+                .insight-card p {
+                    font-size: 0.88rem;
+                    color: rgba(255,255,255,0.6);
+                    line-height: 1.55;
+                    margin: 0 0 0.9rem;
+                }
+
+                /* ── Admin table ── */
+                .resume-data, .admin-logs {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 16px;
+                    padding: 1.4rem;
+                    margin-bottom: 1.2rem;
+                }
+                .stDataFrame {
+                    border-radius: 12px;
+                    overflow: hidden;
+                }
+
+                /* ── Delete / download buttons ── */
+                .stButton > button {
+                    border-radius: 10px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                }
+                .stButton > button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+                }
+                .stDownloadButton > button {
+                    background: linear-gradient(135deg,#4FD1C5,#38b2ac) !important;
+                    color: #0d1b2a !important;
+                    border: none !important;
+                    border-radius: 10px !important;
+                    font-weight: 700 !important;
+                    transition: all 0.2s ease !important;
+                }
+                .stDownloadButton > button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(79,209,197,0.4) !important;
+                }
+
+                [data-testid="stMetricValue"] { font-size: 2rem !important; }
+                [data-testid="stMetricLabel"] { font-size: 1rem !important; }
             </style>
         """, unsafe_allow_html=True)
 
@@ -624,232 +811,120 @@ class DashboardManager:
 
     def render_dashboard(self):
         """Main dashboard rendering function"""
-        # Apply styling
-        st.markdown("""
-            <style>
-                .dashboard-container {
-                    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-                    padding: 2rem;
-                    border-radius: 20px;
-                    margin: -1rem -1rem 2rem -1rem;
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-                }
-                .dashboard-title {
-                    color: #4FD1C5;
-                    font-size: 2.5rem;
-                    margin-bottom: 0.5rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
-                .dashboard-icon {
-                    background: rgba(79, 209, 197, 0.2);
-                    padding: 0.5rem;
-                    border-radius: 12px;
-                }
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 1.5rem;
-                    margin-top: 2rem;
-                }
-                .stat-card {
-                    background: rgba(255, 255, 255, 0.05);
-                    backdrop-filter: blur(10px);
-                    padding: 1.5rem;
-                    border-radius: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    transition: all 0.3s ease;
-                }
-                .stat-card:hover {
-                    transform: translateY(-5px);
-                    background: rgba(255, 255, 255, 0.1);
-                }
-                .stat-value {
-                    font-size: 2.5rem;
-                    font-weight: bold;
-                    margin: 0;
-                    color: #4FD1C5;
-                }
-                .stat-label {
-                    font-size: 1rem;
-                    color: rgba(255, 255, 255, 0.7);
-                    margin: 0.5rem 0 0 0;
-                }
-                .section-title {
-                    color: #4FD1C5;
-                    font-size: 1.5rem;
-                    margin: 1rem 0 0.5rem 0;
-                    padding-bottom: 0.5rem;
-                    border-bottom: 2px solid rgba(79, 209, 197, 0.2);
-                }
-                .chart-container {
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 16px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                }
-                .insights-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 1.5rem;
-                    margin-top: 1rem;
-                }
-                .insight-card {
-                    background: rgba(255, 255, 255, 0.05);
-                    padding: 1.5rem;
-                    border-radius: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                }
-                .trend-indicator {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 12px;
-                    font-size: 0.875rem;
-                    margin-left: 0.5rem;
-                }
-                .trend-up {
-                    background: rgba(46, 204, 113, 0.2);
-                    color: #2ecc71;
-                }
-                .trend-down {
-                    background: rgba(231, 76, 60, 0.2);
-                    color: #e74c3c;
-                }
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                .animate-fade-in {
-                    animation: fadeInUp 0.5s ease-out forwards;
-                }
-            </style>
+        self.apply_dashboard_style()
+
+        # ── Hero Banner ──────────────────────────────────────────────────────
+        st.markdown(f"""
+            <div class="dash-hero">
+                <div class="dash-hero-grid">
+                    <div class="dash-hero-left">
+                        <h1>📊 Resume Analytics Dashboard</h1>
+                        <p>Real-time insights into resume performance, skills & hiring trends</p>
+                    </div>
+                    <div class="dash-timestamp">
+                        🕐 {datetime.now().strftime('%B %d, %Y &nbsp;·&nbsp; %I:%M %p')}
+                    </div>
+                </div>
+            </div>
         """, unsafe_allow_html=True)
 
-        # Dashboard Header
-        st.markdown("""
-            <div class="dashboard-container animate-fade-in">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="dashboard-title">
-                        <span class="dashboard-icon">📊</span>
-                        Resume Analytics Dashboard
-                    </div>
-                    <div style="color: rgba(255, 255, 255, 0.7);">
-                        Last updated: {}
-                    </div>
-                </div>
-            """.format(datetime.now().strftime('%B %d, %Y %I:%M %p')), unsafe_allow_html=True)
-
-        # Quick Stats
+        # ── Quick Stats ──────────────────────────────────────────────────────
         stats = self.get_quick_stats()
         trend_indicators = self.get_trend_indicators()
-        
-        st.markdown("""
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <p class="stat-value">{}</p>
-                    <p class="stat-label">Total Resumes</p>
-                    <span class="trend-indicator {}">
-                        {} {}%
-                    </span>
-                </div>
-                <div class="stat-card">
-                    <p class="stat-value">{}</p>
-                    <p class="stat-label">Avg ATS Score</p>
-                    <span class="trend-indicator {}">
-                        {} {}%
-                    </span>
-                </div>
-                <div class="stat-card">
-                    <p class="stat-value">{}</p>
-                    <p class="stat-label">High Performing</p>
-                    <span class="trend-indicator {}">
-                        {} {}%
-                    </span>
-                </div>
-                <div class="stat-card">
-                    <p class="stat-value">{}</p>
-                    <p class="stat-label">Success Rate</p>
-                    <span class="trend-indicator {}">
-                        {} {}%
-                    </span>
-                </div>
-            </div>
-            </div>
-        """.format(
-            stats['Total Resumes'], 
-            trend_indicators['resumes']['class'], trend_indicators['resumes']['icon'], trend_indicators['resumes']['value'],
-            stats['Avg ATS Score'],
-            trend_indicators['ats']['class'], trend_indicators['ats']['icon'], trend_indicators['ats']['value'],
-            stats['High Performing'],
-            trend_indicators['high_performing']['class'], trend_indicators['high_performing']['icon'], trend_indicators['high_performing']['value'],
-            stats['Success Rate'],
-            trend_indicators['success_rate']['class'], trend_indicators['success_rate']['icon'], trend_indicators['success_rate']['value']
-        ), unsafe_allow_html=True)
 
-        # Performance Analytics Section
+        cards = [
+            {
+                'color': 'teal',
+                'icon': '📄',
+                'value': stats['Total Resumes'],
+                'label': 'Total Resumes',
+                'trend': trend_indicators['resumes'],
+            },
+            {
+                'color': 'blue',
+                'icon': '🎯',
+                'value': stats['Avg ATS Score'],
+                'label': 'Avg ATS Score',
+                'trend': trend_indicators['ats'],
+            },
+            {
+                'color': 'purple',
+                'icon': '🏆',
+                'value': stats['High Performing'],
+                'label': 'High Performing',
+                'trend': trend_indicators['high_performing'],
+            },
+            {
+                'color': 'green',
+                'icon': '✅',
+                'value': stats['Success Rate'],
+                'label': 'Success Rate',
+                'trend': trend_indicators['success_rate'],
+            },
+        ]
+
+        cards_html = '<div class="stats-grid">'
+        for delay, c in enumerate(cards):
+            t = c['trend']
+            cards_html += f"""
+            <div class="stat-card {c['color']}" style="animation-delay:{delay*0.1}s">
+                <span class="stat-icon">{c['icon']}</span>
+                <p class="stat-value">{c['value']}</p>
+                <p class="stat-label">{c['label']}</p>
+                <span class="trend-indicator {t['class']}">{t['icon']} {t['value']}%</span>
+            </div>"""
+        cards_html += '</div>'
+        st.markdown(cards_html, unsafe_allow_html=True)
+
+        # ── Performance Analytics ─────────────────────────────────────────────
         st.markdown('<div class="section-title">📈 Performance Analytics</div>', unsafe_allow_html=True)
-        
+
         col1, col2 = st.columns(2)
-        
         with col1:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             fig = self.create_enhanced_ats_gauge(float(stats['Avg ATS Score'].rstrip('%')))
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
-
         with col2:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             fig = self.create_skill_distribution_chart()
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Additional Analytics
         col1, col2 = st.columns(2)
-        
         with col1:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             fig = self.create_submission_trends_chart()
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
-
         with col2:
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             fig = self.create_job_category_chart()
             st.plotly_chart(fig, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Key Insights Section
+        # ── Key Insights ──────────────────────────────────────────────────────
         st.markdown('<div class="section-title">🎯 Key Insights</div>', unsafe_allow_html=True)
         insights = self.get_detailed_insights()
-        
-        st.markdown('<div class="insights-grid">', unsafe_allow_html=True)
-        for insight in insights:
-            st.markdown(f"""
-                <div class="insight-card">
-                    <h3 style="color: #4FD1C5; margin-bottom: 1rem;">
-                        {insight['icon']} {insight['title']}
-                    </h3>
-                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">
-                        {insight['description']}
-                    </p>
-                    <div style="margin-top: 1rem;">
-                        <span class="trend-indicator {insight['trend_class']}">
-                            {insight['trend_icon']} {insight['trend_value']}
-                        </span>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Admin logs section with Excel download functionality
+        # Map icon to card accent class
+        _accent_map = {'🏆': 'trophy', '📈': 'trend', '💡': 'skills'}
+
+        insights_html = '<div class="insights-grid">'
+        for i, ins in enumerate(insights):
+            accent = _accent_map.get(ins['icon'], 'trend')
+            insights_html += f"""
+            <div class="insight-card {accent}" style="animation-delay:{i*0.12}s">
+                <h3>{ins['icon']} {ins['title']}</h3>
+                <p>{ins['description']}</p>
+                <span class="trend-indicator {ins['trend_class']}">
+                    {ins['trend_icon']} {ins['trend_value']}
+                </span>
+            </div>"""
+        insights_html += '</div>'
+        st.markdown(insights_html, unsafe_allow_html=True)
+
+        # ── Admin section ─────────────────────────────────────────────────────
         if st.session_state.get('is_admin', False):
             self.render_admin_section()
 
@@ -1019,148 +1094,195 @@ class DashboardManager:
         }
 
     def create_enhanced_ats_gauge(self, value):
-        """Create an enhanced ATS score gauge chart"""
-        reference = 70  # Target score
-        delta = value - reference
-        
+        """Create an enhanced ATS score gauge chart with gradient arcs"""
+        reference = 70
+
         fig = go.Figure(go.Indicator(
             mode="gauge+number+delta",
             value=value,
             delta={
                 'reference': reference,
                 'valueformat': '.1f',
-                'increasing': {'color': '#2ecc71'},
-                'decreasing': {'color': '#e74c3c'}
+                'increasing': {'color': '#68d391'},
+                'decreasing': {'color': '#fc8181'},
+                'font': {'size': 16}
             },
-            number={'font': {'size': 40, 'color': 'white'}},
+            number={'font': {'size': 52, 'color': '#4FD1C5', 'family': 'Inter'}, 'suffix': '%'},
             gauge={
                 'axis': {
                     'range': [0, 100],
                     'tickwidth': 1,
-                    'tickcolor': 'white',
-                    'tickfont': {'color': 'white'}
+                    'tickcolor': 'rgba(255,255,255,0.4)',
+                    'tickfont': {'color': 'rgba(255,255,255,0.6)', 'size': 11},
+                    'nticks': 6
                 },
-                'bar': {'color': '#3498db'},
+                'bar': {'color': '#4FD1C5', 'thickness': 0.22},
                 'bgcolor': 'rgba(0,0,0,0)',
-                'borderwidth': 2,
-                'bordercolor': 'white',
+                'borderwidth': 0,
                 'steps': [
-                    {'range': [0, 40], 'color': '#e74c3c'},
-                    {'range': [40, 70], 'color': '#f1c40f'},
-                    {'range': [70, 100], 'color': '#2ecc71'}
+                    {'range': [0,  40], 'color': 'rgba(252,129,129,0.25)'},
+                    {'range': [40, 70], 'color': 'rgba(246,224,94,0.20)'},
+                    {'range': [70,100], 'color': 'rgba(104,211,145,0.20)'},
                 ],
                 'threshold': {
-                    'line': {'color': 'white', 'width': 4},
-                    'thickness': 0.75,
+                    'line': {'color': '#f6e05e', 'width': 3},
+                    'thickness': 0.8,
                     'value': reference
                 }
             }
         ))
-        
+
         fig.update_layout(
             title={
-                'text': 'ATS Score Performance',
-                'font': {'size': 24, 'color': 'white'},
-                'y': 0.85
+                'text': '🎯 ATS Score Performance',
+                'font': {'size': 16, 'color': 'rgba(255,255,255,0.85)', 'family': 'Inter'},
+                'y': 0.92, 'x': 0.5, 'xanchor': 'center'
             },
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font={'color': 'white'},
-            height=350,
-            margin=dict(l=20, r=20, t=80, b=20)
+            font={'color': 'white', 'family': 'Inter'},
+            height=340,
+            margin=dict(l=24, r=24, t=70, b=24)
         )
-        
         return fig
 
     def create_skill_distribution_chart(self):
-        """Create a skill distribution chart"""
+        """Create a horizontal gradient skill distribution chart"""
         categories, counts = self.get_skill_distribution()
-        
-        fig = go.Figure(data=[
-            go.Bar(
-                x=categories,
-                y=counts,
-                marker_color=self.colors['info'],
-                text=counts,
-                textposition='auto',
-            )
-        ])
-        
+
+        palette = ['#4FD1C5', '#63b3ed', '#b794f4', '#68d391', '#f6ad55']
+        colors  = [palette[i % len(palette)] for i in range(len(categories))]
+
+        fig = go.Figure(go.Bar(
+            x=counts,
+            y=categories,
+            orientation='h',
+            marker=dict(
+                color=colors,
+                line=dict(width=0)
+            ),
+            text=[f"{c:,}" for c in counts],
+            textposition='outside',
+            textfont=dict(color='rgba(255,255,255,0.75)', size=12),
+        ))
+
         fig.update_layout(
             title={
-                'text': 'Skill Distribution',
-                'y':0.95,
-                'x':0.5,
-                'xanchor': 'center',
-                'yanchor': 'top'
+                'text': '🛠 Skill Distribution',
+                'font': {'size': 16, 'color': 'rgba(255,255,255,0.85)', 'family': 'Inter'},
+                'y': 0.96, 'x': 0.5, 'xanchor': 'center'
             },
-            height=350,  
+            height=340,
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color=self.colors['text']),
-            margin=dict(l=40, r=40, t=60, b=40),
+            font=dict(color='white', family='Inter'),
+            margin=dict(l=20, r=60, t=60, b=20),
             xaxis=dict(
-                showgrid=False,
-                showline=True,
-                linecolor='rgba(255,255,255,0.2)',
-                tickfont=dict(size=12)
+                showgrid=True,
+                gridcolor='rgba(255,255,255,0.07)',
+                zeroline=False,
+                showline=False,
+                tickfont=dict(size=11)
             ),
             yaxis=dict(
-                showgrid=True,
-                gridcolor='rgba(255,255,255,0.1)',
-                zeroline=False
+                showgrid=False,
+                zeroline=False,
+                tickfont=dict(size=13, color='rgba(255,255,255,0.8)')
             ),
-            bargap=0.3
+            bargap=0.28
         )
         return fig
 
     def create_submission_trends_chart(self):
-        """Create a weekly submission trend chart"""
+        """Create a weekly submission trend chart with area fill"""
         dates, submissions = self.get_weekly_trends()
+
         fig = go.Figure()
+        # Area fill
         fig.add_trace(go.Scatter(
-            x=dates,
-            y=submissions,
-            mode='lines+markers',
-            line=dict(color=self.colors['info'], width=3),
-            marker=dict(size=8, color=self.colors['info'])
+            x=dates, y=submissions,
+            fill='tozeroy',
+            fillcolor='rgba(79,209,197,0.12)',
+            line=dict(color='rgba(0,0,0,0)', width=0),
+            showlegend=False,
+            hoverinfo='skip'
         ))
-        
+        # Line + markers
+        fig.add_trace(go.Scatter(
+            x=dates, y=submissions,
+            mode='lines+markers',
+            name='Submissions',
+            line=dict(color='#4FD1C5', width=3, shape='spline', smoothing=1.2),
+            marker=dict(
+                size=9,
+                color='#4FD1C5',
+                line=dict(width=2, color='rgba(13,27,42,0.8)')
+            ),
+            hovertemplate='%{x}: <b>%{y}</b> submissions<extra></extra>'
+        ))
+
         fig.update_layout(
-            title="Weekly Submission Pattern",
-            paper_bgcolor=self.colors['card'],
-            plot_bgcolor=self.colors['card'],
-            font={'color': self.colors['text']},
-            height=300,
-            margin=dict(l=20, r=20, t=50, b=20)
+            title={
+                'text': '📅 Weekly Submission Trend',
+                'font': {'size': 16, 'color': 'rgba(255,255,255,0.85)', 'family': 'Inter'},
+                'y': 0.94, 'x': 0.5, 'xanchor': 'center'
+            },
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font={'color': 'white', 'family': 'Inter'},
+            height=310,
+            margin=dict(l=20, r=20, t=55, b=20),
+            showlegend=False,
+            xaxis=dict(
+                showgrid=False, zeroline=False,
+                tickfont=dict(size=12, color='rgba(255,255,255,0.6)')
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridcolor='rgba(255,255,255,0.07)',
+                zeroline=False,
+                tickfont=dict(size=11, color='rgba(255,255,255,0.6)')
+            )
         )
-        fig.update_xaxes(title_text="Day of Week", color=self.colors['text'])
-        fig.update_yaxes(title_text="Number of Submissions", color=self.colors['text'])
-        
         return fig
 
     def create_job_category_chart(self):
-        """Create a success rate by category chart"""
+        """Create a success rate by job category chart with gradient bars"""
         categories, rates = self.get_job_category_stats()
+
+        palette = ['#68d391', '#4FD1C5', '#f6ad55', '#b794f4', '#63b3ed']
+        bar_colors = [palette[i % len(palette)] for i in range(len(categories))]
+
         fig = go.Figure(go.Bar(
             x=categories,
             y=rates,
-            marker_color=[self.colors['success'], self.colors['info'], 
-                        self.colors['warning'], self.colors['purple'], 
-                        self.colors['secondary']],
-            text=[f"{rate}%" for rate in rates],
-            textposition='auto',
+            marker=dict(color=bar_colors, line=dict(width=0)),
+            text=[f"{r}%" for r in rates],
+            textposition='outside',
+            textfont=dict(color='rgba(255,255,255,0.75)', size=12),
         ))
-        
+
         fig.update_layout(
-            title="Success Rate by Job Category",
-            paper_bgcolor=self.colors['card'],
-            plot_bgcolor=self.colors['card'],
-            font={'color': self.colors['text']},
-            height=300,
-            margin=dict(l=20, r=20, t=50, b=20)
+            title={
+                'text': '📊 Success Rate by Job Category',
+                'font': {'size': 16, 'color': 'rgba(255,255,255,0.85)', 'family': 'Inter'},
+                'y': 0.95, 'x': 0.5, 'xanchor': 'center'
+            },
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font={'color': 'white', 'family': 'Inter'},
+            height=310,
+            margin=dict(l=20, r=20, t=55, b=20),
+            xaxis=dict(
+                showgrid=False, zeroline=False,
+                tickfont=dict(size=12, color='rgba(255,255,255,0.6)')
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridcolor='rgba(255,255,255,0.07)',
+                zeroline=False,
+                tickfont=dict(size=11, color='rgba(255,255,255,0.6)')
+            ),
+            bargap=0.3
         )
-        fig.update_xaxes(title_text="Job Category", color=self.colors['text'])
-        fig.update_yaxes(title_text="Success Rate (%)", color=self.colors['text'])
-        
         return fig
