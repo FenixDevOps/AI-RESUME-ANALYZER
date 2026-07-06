@@ -18,25 +18,8 @@ https://ai-resume-analyzer-v43d.onrender.com/
 
 ---
 
-# 📸 Project Preview
 
-## Resume Analyzer Dashboard
 
-*(Add screenshot of the dashboard here)*
-
-Example:
-
-![Dashboard](docs/dashboard.png)
-
----
-
-# 🎥 Demo
-
-*(Add a short GIF demonstrating how the app works)*
-
-Example:
-
-![Demo](docs/demo.gif)
 
 ---
 
